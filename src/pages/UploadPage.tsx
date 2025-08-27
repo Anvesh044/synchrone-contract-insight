@@ -55,8 +55,9 @@ export const UploadPage = () => {
           );
           
           // Add the completed contract to the contracts list
-          const file = uploadedFiles[fileIndex]?.file;
-          if (file) {
+          setUploadedFiles(currentFiles => {
+            const file = currentFiles[fileIndex]?.file;
+            if (file) {
             const newContract: Contract = {
               id: Date.now().toString(),
               title: file.name.replace('.pdf', ''),
@@ -82,9 +83,11 @@ export const UploadPage = () => {
                 ]
               }
             };
-            addContract(newContract);
-            toast.success("Contract processed and added to your list!");
-          }
+              addContract(newContract);
+              toast.success("Contract processed and added to your list!");
+            }
+            return currentFiles;
+          });
         }, 1000);
       }
       updateProgress(Math.min(progress, 100));

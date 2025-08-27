@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { StatusBadge } from "./StatusBadge";
 import { ProgressBar } from "./ProgressBar";
-import { FileText, Calendar, Users, DollarSign } from "lucide-react";
+import { FileText, Calendar, Users, DollarSign, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
+import jsPDF from 'jspdf';
 
 interface Contract {
   id: string;
@@ -22,7 +24,38 @@ interface ContractCardProps {
   style?: React.CSSProperties;
 }
 
+const generatePDF = (contract: Contract) => {
+  const doc = new jsPDF();
+  
+  // Title
+  doc.setFontSize(20);
+  doc.text('Contract Summary Report', 20, 30);
+  
+  // Contract details
+  doc.setFontSize(12);
+  doc.text(`Contract Title: ${contract.title}`, 20, 50);
+  doc.text(`Parties: ${contract.parties.join(', ')}`, 20, 65);
+  doc.text(`Status: ${contract.status}`, 20, 80);
+  doc.text(`Upload Date: ${new Date(contract.uploadDate).toLocaleDateString()}`, 20, 95);
+  
+  if (contract.confidenceScore) {
+    doc.text(`Confidence Score: ${contract.confidenceScore}%`, 20, 110);
+  }
+  
+  if (contract.financialValue) {
+    doc.text(`Financial Value: ${contract.financialValue}`, 20, 125);
+  }
+  
+  // Save the PDF
+  doc.save(`${contract.title}-summary.pdf`);
+};
+
 export const ContractCard = ({ contract, onClick, className, style }: ContractCardProps) => {
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click
+    generatePDF(contract);
+  };
+
   return (
     <Card 
       className={cn(
@@ -39,7 +72,18 @@ export const ContractCard = ({ contract, onClick, className, style }: ContractCa
             <FileText className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg">{contract.title}</CardTitle>
           </div>
-          <StatusBadge status={contract.status} />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDownload}
+              className="h-8 w-8 p-0 hover:bg-primary/20"
+              title="Download PDF"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+            <StatusBadge status={contract.status} />
+          </div>
         </div>
       </CardHeader>
       
